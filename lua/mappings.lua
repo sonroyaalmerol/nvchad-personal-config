@@ -1,6 +1,7 @@
 require "nvchad.mappings"
 
--- add yours here
+local map = vim.keymap.set
+
 map("n", "gd", "<cmd>lua vim.lsp.buf.definition()<CR>", { desc = "Go to definition" })
 map("n", "gD", "<cmd>lua vim.lsp.buf.declaration()<CR>", { desc = "Go to declaration" })
 map("n", "gr", "<cmd>lua vim.lsp.buf.references()<CR>", { desc = "Go to references" })
@@ -21,10 +22,3 @@ map("n", "<leader>fm", "<cmd>lua vim.lsp.buf.formatting()<CR>", { desc = "Format
 map("n", "<leader>fe", "<cmd>lua vim.lsp.buf.formatting_sync(nil, 1000)<CR>", { desc = "Format sync" })
 map("n", "<leader>fs", "<cmd>lua vim.lsp.buf.formatting_seq_sync()<CR>", { desc = "Format seq sync" })
 
-
-local map = vim.keymap.set
-
-map("n", ";", ":", { desc = "CMD enter command mode" })
-map("i", "jk", "<ESC>")
-
--- map({ "n", "i", "v" }, "<C-s>", "<cmd> w <cr>")

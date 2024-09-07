@@ -12,7 +12,7 @@ local servers = {
   "html",
   "cssls",
   "clangd",
-  "tsserver",
+  "ts_ls",
   "pyright",
   "tailwindcss",
   "graphql",

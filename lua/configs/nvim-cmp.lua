@@ -1,5 +1,5 @@
 local cmp = require "cmp"
-local M = require "plugins.configs.cmp"
+local M = require "nvchad.configs.cmp"
 
 table.insert(M.sources, { name = "crates" })
 table.insert(M.sources, { name = "copilot" })

@@ -21,7 +21,7 @@ local servers = {
   "templ",
   "htmx",
   "hyprls",
-  "nixd",
+  "nil_ls",
 }
 
 for _, lsp in ipairs(servers) do

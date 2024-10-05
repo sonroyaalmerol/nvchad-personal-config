@@ -9,6 +9,7 @@ local lspconfig = require "lspconfig"
 vim.filetype.add({ extension = { templ = "templ" } })
 
 local servers = {
+  "bufls",
   "html",
   "cssls",
   "clangd",
@@ -59,6 +60,15 @@ for _, lsp in ipairs(servers) do
       capabilities = capabilities,
       filetypes = { "templ", "astro", "javascript", "typescript", "react" },
       init_options = { userLanguages = { templ = "html" } },
+    })
+  elseif lsp == "bufls" then
+    lspconfig[lsp].setup({
+      cmd = { "buf", "beta", "lsp" },
+      on_attach = on_attach,
+      capabilities = merged_capabilities,
+      flags = {
+        debounce_text_changes = 150,
+      }
     })
   else
     lspconfig[lsp].setup({

@@ -14,7 +14,7 @@ local servers = {
   "cssls",
   "clangd",
   "ts_ls",
-  "pyright",
+  "basedpyright",
   "tailwindcss",
   "graphql",
   "gopls",

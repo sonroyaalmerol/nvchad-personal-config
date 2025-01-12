@@ -1,120 +1,83 @@
--- load defaults i.e lua_lsp
-require("nvchad.configs.lspconfig").defaults()
+-- Import required modules
+local lspconfig = require("lspconfig")
+local nvchad_config = require("nvchad.configs.lspconfig")
 
-local on_attach = require("nvchad.configs.lspconfig").on_attach
-local capabilities = require("nvchad.configs.lspconfig").capabilities
+-- Load default configurations
+nvchad_config.defaults()
 
-local lspconfig = require "lspconfig"
+-- Get default handlers
+local on_attach = nvchad_config.on_attach
+local capabilities = nvchad_config.capabilities
 
-vim.filetype.add({ extension = { templ = "templ" } })
-
+-- Define LSP servers to configure
 local servers = {
-  "bufls",
+  "buf_ls",
   "html",
   "cssls",
   "clangd",
   "ts_ls",
   "basedpyright",
-  "tailwindcss",
-  "graphql",
   "gopls",
-  "omnisharp",
-  "templ",
-  "htmx",
   "hyprls",
   "nil_ls",
 }
 
-for _, lsp in ipairs(servers) do
-  local custom_capabilities = {
-    workspace = {
-      didChangeWatchedFiles = {
-        dynamicRegistration = true,
-      },
+-- Enhanced capabilities for file watching
+local enhanced_capabilities = {
+  workspace = {
+    didChangeWatchedFiles = {
+      dynamicRegistration = true,
     },
-  }
-  local merged_capabilities = vim.tbl_deep_extend("force", capabilities, custom_capabilities)
+  },
+}
 
-  if lsp == "omnisharp" then
-    local pid = vim.fn.getpid()
-    local omnisharp_bin = "/usr/local/bin/omnisharp-roslyn/OmniSharp"
-    lspconfig[lsp].setup {
-      on_attach = on_attach,
-      capabilities = capabilities,
-      flags = {
-        debounce_text_changes = 150,
-      },
-      cmd = {
-        omnisharp_bin, "--languageserver", "--hostPID", tostring(pid)
-      }
+-- Merge default and enhanced capabilities
+local merged_capabilities = vim.tbl_deep_extend("force", capabilities, enhanced_capabilities)
+
+-- Configure each LSP server
+for _, lsp in ipairs(servers) do
+  local config = {
+    on_attach = on_attach,
+    capabilities = merged_capabilities,
+    flags = {
+      debounce_text_changes = 150,
     }
-  elseif lsp == "html" or lsp == "htmx" then
-    lspconfig[lsp].setup({
-      on_attach = on_attach,
-      capabilities = capabilities,
-      filetypes = { "html", "templ" },
-    })
-  elseif lsp == "tailwindcss" then
-    lspconfig[lsp].setup({
-      on_attach = on_attach,
-      capabilities = capabilities,
-      filetypes = { "templ", "astro", "javascript", "typescript", "react" },
-      init_options = { userLanguages = { templ = "html" } },
-    })
-  elseif lsp == "bufls" then
-    lspconfig[lsp].setup({
-      cmd = { "buf", "beta", "lsp" },
-      on_attach = on_attach,
-      capabilities = merged_capabilities,
-      flags = {
-        debounce_text_changes = 150,
-      }
-    })
-  else
-    lspconfig[lsp].setup({
-      on_attach = on_attach,
-      capabilities = merged_capabilities,
-      flags = {
-        debounce_text_changes = 150,
-      }
-    })
+  }
+
+  -- Special configuration for HTML
+  if lsp == "html" then
+    config.filetypes = { "html" }
+    config.capabilities = capabilities  -- Use default capabilities
   end
+
+  -- Special configuration for buf_ls
+  if lsp == "buf_ls" then
+    config.cmd = { "buf", "beta", "lsp" }
+  end
+
+  -- Setup the LSP
+  lspconfig[lsp].setup(config)
 end
 
+-- Auto-formatting for Go files
 local format_sync_grp = vim.api.nvim_create_augroup("GoImport", {})
 vim.api.nvim_create_autocmd("BufWritePre", {
   pattern = "*.go",
   callback = function()
-   require('go.format').goimport()
+    require('go.format').goimport()
   end,
   group = format_sync_grp,
 })
 
-vim.api.nvim_create_autocmd({ "BufWritePre" }, { pattern = { "*.templ" },
-  callback = function ()
-    local bufnr = vim.api.nvim_get_current_buf()
-    local filename = vim.api.nvim_buf_get_name(bufnr)
-    local cmd = "templ fmt " .. vim.fn.shellescape(filename)
-
-    vim.fn.jobstart(cmd, {
-      on_exit = function()
-        -- Reload the buffer only if it's still the current buffer
-        if vim.api.nvim_get_current_buf() == bufnr then
-          vim.cmd('e!')
-        end
-      end,
-    })
-  end
-})
-
+-- Configure Hyprland LSP
 vim.api.nvim_create_autocmd({'BufEnter', 'BufWinEnter'}, {
   pattern = {"*.hl", "hypr*.conf"},
   callback = function(event)
-      print(string.format("starting hyprls for %s", vim.inspect(event)))
-      vim.lsp.start {
-          name = "hyprlang",
-          cmd = {"hyprls"},
-          root_dir = vim.fn.getcwd(),
-      }
+    vim.notify(string.format("Starting hyprls for %s", vim.inspect(event)), vim.log.levels.INFO)
+    vim.lsp.start({
+      name = "hyprlang",
+      cmd = {"hyprls"},
+      root_dir = vim.fn.getcwd(),
+    })
   end
 })

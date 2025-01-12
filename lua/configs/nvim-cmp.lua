@@ -1,9 +1,6 @@
 local cmp = require "cmp"
 local M = require "nvchad.configs.cmp"
 
-table.insert(M.sources, { name = "crates" })
-table.insert(M.sources, { name = "copilot" })
-
 M.mapping = {
   ["<C-p>"] = cmp.mapping.select_prev_item(),
   ["<C-n>"] = cmp.mapping.select_next_item(),

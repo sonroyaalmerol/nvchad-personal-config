@@ -20,6 +20,8 @@ local servers = {
   "gopls",
   "hyprls",
   "nil_ls",
+  "docker_compose_language_service",
+  "dockerls",
 }
 
 -- Enhanced capabilities for file watching

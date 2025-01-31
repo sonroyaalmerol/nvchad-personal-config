@@ -1,6 +1,6 @@
 -- Import required modules
-local lspconfig = require("lspconfig")
-local nvchad_config = require("nvchad.configs.lspconfig")
+local lspconfig = require "lspconfig"
+local nvchad_config = require "nvchad.configs.lspconfig"
 
 -- Load default configurations
 nvchad_config.defaults()
@@ -18,6 +18,7 @@ local servers = {
   "ts_ls",
   "basedpyright",
   "gopls",
+  "zls",
   "hyprls",
   "nil_ls",
   "docker_compose_language_service",
@@ -43,13 +44,13 @@ for _, lsp in ipairs(servers) do
     capabilities = merged_capabilities,
     flags = {
       debounce_text_changes = 150,
-    }
+    },
   }
 
   -- Special configuration for HTML
   if lsp == "html" then
     config.filetypes = { "html" }
-    config.capabilities = capabilities  -- Use default capabilities
+    config.capabilities = capabilities -- Use default capabilities
   end
 
   -- Special configuration for buf_ls
@@ -66,20 +67,20 @@ local format_sync_grp = vim.api.nvim_create_augroup("GoImport", {})
 vim.api.nvim_create_autocmd("BufWritePre", {
   pattern = "*.go",
   callback = function()
-    require('go.format').goimport()
+    require("go.format").goimport()
   end,
   group = format_sync_grp,
 })
 
 -- Configure Hyprland LSP
-vim.api.nvim_create_autocmd({'BufEnter', 'BufWinEnter'}, {
-  pattern = {"*.hl", "hypr*.conf"},
+vim.api.nvim_create_autocmd({ "BufEnter", "BufWinEnter" }, {
+  pattern = { "*.hl", "hypr*.conf" },
   callback = function(event)
     vim.notify(string.format("Starting hyprls for %s", vim.inspect(event)), vim.log.levels.INFO)
-    vim.lsp.start({
+    vim.lsp.start {
       name = "hyprlang",
-      cmd = {"hyprls"},
+      cmd = { "hyprls" },
       root_dir = vim.fn.getcwd(),
-    })
-  end
+    }
+  end,
 })

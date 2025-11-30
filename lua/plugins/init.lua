@@ -1,20 +1,39 @@
 return {
   {
-    "nvchad/base46",
-    lazy = false,
-    priority = 1000,
-    build = function()
-      require("base46").load_all_highlights()
-    end,
-  },
-
-  {
     "nvchad/ui",
     lazy = false,
-    priority = 999,
     config = function()
       require "nvchad"
-      require("material-you.colors").setup()
+      local function inject_material_colors()
+        package.loaded["material-you.colors"] = nil
+        local success, my_colors = pcall(require, "material-you.colors")
+
+        if not success then
+          return
+        end
+
+        local highlights = my_colors.get_highlights()
+        if not highlights or next(highlights) == nil then
+          print "MaterialYou: No highlights generated"
+          return
+        end
+
+        local nvconfig = require "nvconfig"
+
+        nvconfig.base46.hl_override = vim.tbl_deep_extend("force", nvconfig.base46.hl_override or {}, highlights)
+
+        require("base46").load_all_highlights()
+      end
+
+      inject_material_colors()
+
+      local cfg = vim.fn.stdpath "config"
+      vim.api.nvim_create_autocmd("BufWritePost", {
+        pattern = cfg .. "/*",
+        callback = function()
+          vim.defer_fn(inject_material_colors, 50)
+        end,
+      })
     end,
   },
   {
@@ -22,7 +41,6 @@ return {
     event = "BufWritePre", -- uncomment for format on save
     opts = require "configs.conform",
   },
-
   {
     "neovim/nvim-lspconfig",
     config = function()

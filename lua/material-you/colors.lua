@@ -108,13 +108,13 @@ local function generate_material_colors()
   return colors
 end
 
--- Apply Material You colors to NvChad using hl_override
-function M.setup()
+function M.get_highlights()
   -- Generate Material You colors
   local material_colors = generate_material_colors()
   if not material_colors then
     vim.notify("Failed to generate Material You colors from quickshell config", vim.log.levels.WARN)
-    return
+    -- Return an empty table instead of nil to prevent type errors in consumer functions
+    return {}
   end
 
   local c = material_colors
@@ -135,20 +135,16 @@ function M.setup()
   local lightbg = c.surfaceContainer
 
   -- Override all highlights with Material You colors
-  nvconfig.base46.hl_override = vim.tbl_deep_extend("force", nvconfig.base46.hl_override or {}, {
+  ---@type Base46HLGroupsList
+  return {
     -- Editor basics
     Normal = { fg = c.onSurface, bg = c.surface },
     NormalFloat = { fg = c.onSurface, bg = c.surfaceContainer },
-    NormalNC = { fg = c.onSurface, bg = c.surfaceDim },
 
     -- UI Elements
     StatusLine = { fg = c.onSurface, bg = c.surfaceContainer },
-    StatusLineNC = { fg = c.onSurfaceVariant, bg = c.surfaceContainerLow },
-    TabLine = { fg = c.onSurfaceVariant, bg = c.surfaceContainer },
-    TabLineFill = { bg = c.surface },
-    TabLineSel = { fg = c.onPrimaryContainer, bg = c.primaryContainer },
+    Tabline = { fg = c.onSurfaceVariant, bg = c.surfaceContainer }, -- FIXED: TabLine -> Tabline
     WinSeparator = { fg = c.outlineVariant },
-    VertSplit = { fg = c.outlineVariant },
 
     -- Cursor and lines
     Cursor = { fg = c.surface, bg = c.onSurface },
@@ -169,7 +165,7 @@ function M.setup()
     VisualNOS = { bg = c.secondaryContainer },
     Search = { fg = c.onTertiaryContainer, bg = c.tertiaryContainer },
     IncSearch = { fg = c.onTertiary, bg = c.tertiary },
-    CurSearch = { fg = c.onTertiary, bg = c.tertiary },
+    -- CurSearch = { fg = c.onTertiary, bg = c.tertiary }, -- NOT IN TYPE DEF
 
     -- Syntax
     Comment = { fg = c.onSurfaceVariant, italic = true },
@@ -203,10 +199,6 @@ function M.setup()
     DiagnosticWarn = { fg = c.tertiary },
     DiagnosticInfo = { fg = c.primary },
     DiagnosticHint = { fg = c.onSurfaceVariant },
-    DiagnosticUnderlineError = { sp = c.error, undercurl = true },
-    DiagnosticUnderlineWarn = { sp = c.tertiary, undercurl = true },
-    DiagnosticUnderlineInfo = { sp = c.primary, undercurl = true },
-    DiagnosticUnderlineHint = { sp = c.onSurfaceVariant, undercurl = true },
 
     -- Git/Diff
     DiffAdd = { fg = c.success, bg = c.successContainer },
@@ -225,11 +217,9 @@ function M.setup()
     NvimTreeEmptyFolderName = { fg = c.onSurfaceVariant },
     NvimTreeIndentMarker = { fg = c.outline },
     NvimTreeGitDirty = { fg = c.tertiary },
-    NvimTreeGitStaged = { fg = c.success or c.tertiary },
     NvimTreeGitNew = { fg = c.success or c.tertiary },
     NvimTreeGitDeleted = { fg = c.error },
     NvimTreeSpecialFile = { fg = c.tertiary },
-    NvimTreeImageFile = { fg = c.secondary },
     NvimTreeCursorLine = { bg = c.surfaceContainerHighest },
 
     -- Telescope
@@ -238,12 +228,7 @@ function M.setup()
     TelescopePromptNormal = { fg = c.onSurface, bg = c.surfaceContainer },
     TelescopePromptBorder = { fg = c.outline, bg = c.surfaceContainer },
     TelescopePromptPrefix = { fg = c.primary, bg = c.surfaceContainer },
-    TelescopeResultsNormal = { fg = c.onSurface, bg = c.surface },
-    TelescopeResultsBorder = { fg = c.outline, bg = c.surface },
-    TelescopePreviewNormal = { fg = c.onSurface, bg = c.surfaceDim },
-    TelescopePreviewBorder = { fg = c.outline, bg = c.surfaceDim },
     TelescopeSelection = { fg = c.onSurface, bg = c.surfaceContainerHighest },
-    TelescopeSelectionCaret = { fg = c.primary, bg = c.surfaceContainerHighest },
     TelescopeMatching = { fg = c.primary, bold = true },
 
     -- Treesitter
@@ -327,24 +312,23 @@ function M.setup()
     -- LSP status
     St_Lsp = { fg = c.primary, bg = statusline_bg },
     St_LspMsg = { fg = c.tertiary, bg = statusline_bg },
-    St_LspStatus = { fg = c.primary, bg = statusline_bg },
+    -- St_LspStatus = { fg = c.primary, bg = statusline_bg }, -- NOT IN TYPE DEF
 
-    -- LSP diagnostics (MISSING in your code!)
+    -- LSP diagnostics
     St_lspError = { fg = c.error, bg = statusline_bg },
     St_lspWarning = { fg = c.tertiary, bg = statusline_bg },
     St_LspHints = { fg = c.secondary, bg = statusline_bg },
     St_LspInfo = { fg = c.primary, bg = statusline_bg },
-  })
+  }
+end
 
-  -- Set terminal colors
-  if c.term0 then
+function M.setup_terminal()
+  local c = generate_material_colors()
+  if c and c.term0 then
     for i = 0, 15 do
       vim.g["terminal_color_" .. i] = c["term" .. i]
     end
   end
-
-  -- Compile and load highlights
-  require("base46").load_all_highlights()
 end
 
 return M

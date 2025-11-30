@@ -1,5 +1,4 @@
 -- Import required modules
-local lspconfig = require "lspconfig"
 local nvchad_config = require "nvchad.configs.lspconfig"
 
 -- Load default configurations
@@ -23,6 +22,7 @@ local servers = {
   "nil_ls",
   "docker_compose_language_service",
   "dockerls",
+  "rust_analyzer",
 }
 
 -- Enhanced capabilities for file watching
@@ -59,7 +59,8 @@ for _, lsp in ipairs(servers) do
   end
 
   -- Setup the LSP
-  lspconfig[lsp].setup(config)
+  vim.lsp.config(lsp, config)
+  vim.lsp.enable(lsp)
 end
 
 -- Auto-formatting for Go files
